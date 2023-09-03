@@ -26,30 +26,46 @@ async function run() {
     await client.connect();
     const coffeeCollection = client.db("coffeeDB").collection("coffee");
 
-    app.get('/coffee',async(req,res)=>{
+    app.get('/coffee', async (req, res) => {
       const cursor = coffeeCollection.find();
       const result = await cursor.toArray();
       res.send(result);
     })
 
-    app.get('/coffee/:id',async(req,res)=>{
+    app.get('/coffee/:id', async (req, res) => {
       const id = req.params.id;
-      const query = {_id: new ObjectId(id)};
+      const query = { _id: new ObjectId(id) };
       const result = await coffeeCollection.findOne(query);
       res.send(result);
     })
 
-    app.post('/coffee',async(req,res)=>{
-        const newCoffee = req.body;
-        console.log(newCoffee);
+    app.post('/coffee', async (req, res) => {
+      const newCoffee = req.body;
+      console.log(newCoffee);
 
-        const result = await coffeeCollection.insertOne(newCoffee);
-        res.send(result);
+      const result = await coffeeCollection.insertOne(newCoffee);
+      res.send(result);
     })
 
-    // app.put('/coffee',async(req,res)=>{
-
-    // })
+    app.put('/coffee/:id', async (req, res) => {
+      const id = req.params.id;
+      const coffee = req.body;
+      console.log(coffee);
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updateCoffee = {
+        $set: {
+          name: coffee.name,
+          quantity: coffee.quantity,
+          supplier: coffee.supplier,
+          taste: coffee.taste,
+          category: coffee.category,
+          details: coffee.details
+        }
+      }
+      const result = await coffeeCollection.updateOne(filter,updateCoffee,options);
+      res.send(result);
+    })
 
     // Send a ping to confirm a successful connection
     await client.db("admin").command({ ping: 1 });
@@ -62,10 +78,10 @@ async function run() {
 run().catch(console.dir);
 
 
-app.get('/',(req,res)=>{
-    res.send('Coffee server running.')
+app.get('/', (req, res) => {
+  res.send('Coffee server running.')
 })
 
-app.listen(port,()=>{
-    console.log(`coffee server port on: ${port}`)
+app.listen(port, () => {
+  console.log(`coffee server port on: ${port}`)
 })
